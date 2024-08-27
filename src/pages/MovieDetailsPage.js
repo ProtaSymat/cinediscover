@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchMovieDetails, fetchMovieReviews } from '../api/movies';
+import { Link } from 'react-router-dom';
 
 const MovieDetailsPage = () => {
   const { id } = useParams();
@@ -25,9 +26,12 @@ const MovieDetailsPage = () => {
   if (!movieDetails) return <div>Loading movie details...</div>;
 
   return (
-    <div className="container pt-5 bg-dark">
-      <div className="row">
-        <div className="col-md-8 text-white">
+    <div className="container py-5 bg-dark">
+      <div className="mb-3">
+      <Link to="/" className="btn btn-light">Revenir à l'accueil</Link>
+    </div>
+      <div className="row pb-5">
+        <div className="col-md-8 text-white pb-5">
           <h1>{movieDetails.title}</h1>
           <p>{movieDetails.overview}</p>
           <h3>Avis</h3>
@@ -42,7 +46,7 @@ const MovieDetailsPage = () => {
             <p>Pas d'avis disponible :(</p>
           )}
         </div>
-        <div className="col-md-4">
+        <div className="col-md-4 pb-5">
           <img src={`https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`} alt={movieDetails.title} className="img-fluid" />
         </div>
       </div>

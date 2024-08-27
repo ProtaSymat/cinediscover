@@ -1,17 +1,41 @@
-const API_URL = "https://api.themoviedb.org/3/search/movie";
+const API_SEARCHURL = "https://api.themoviedb.org/3/search/movie";
 const API_DETAILURL = "https://api.themoviedb.org/3/";
 const API_KEY = process.env.REACT_APP_API_KEY;
 
-export const searchMovies = async (query) => {
+export const fetchGenres = async () => {
   try {
-    const response = await fetch(`${API_URL}?api_key=${API_KEY}&query=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_DETAILURL}genre/movie/list?api_key=${API_KEY}&language=en-US`);
     if (!response.ok) {
-      throw new Error('Erreur réseau');
+      throw new Error('Réponse réseau non ok.');
     }
     const data = await response.json();
-    return data.results;
+    return data.genres;
   } catch (error) {
-    console.error("Erreur lors de la recherche de films :", error);
+    console.error("Erreur lors de la récupération des genres :", error);
+    throw error;
+  }
+};
+
+export const searchMovies = async (query, genre, page = 1) => {
+  const url = new URL(API_SEARCHURL);
+  url.searchParams.append("api_key", API_KEY);
+  url.searchParams.append("query", query);
+  url.searchParams.append("language", "en-US");
+  url.searchParams.append("page", page);
+console.log(url);
+  if (genre) {
+    url.searchParams.append("with_genres", genre); 
+  }
+
+  try {
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      throw new Error('Réponse réseau non ok.');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Erreur lors de la recherche des films :", error);
     throw error;
   }
 };
@@ -19,14 +43,11 @@ export const searchMovies = async (query) => {
 export const fetchMovieDetails = async (movieId) => {
   try {
     const url = `${API_DETAILURL}movie/${movieId}?api_key=${API_KEY}&language=en-US`;
-    console.log("URL de requête fetchMovieDetails:", url); // Vérifier l'URL construite
     const response = await fetch(url);
-    console.log("Réponse fetchMovieDetails:", response); // Examiner l'objet de réponse
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
-    console.log("Données fetchMovieDetails:", data); // Examiner les données reçues
     return data;
   } catch (error) {
     console.error("Erreur lors de la récupération des détails du film :", error);

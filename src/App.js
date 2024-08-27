@@ -9,10 +9,11 @@ function App() {
   return (
     <Router>
       <div className="bg-dark">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/movie/:id" element={<MovieDetailsPage />} />
-        </Routes>
+      <Routes>
+  <Route path="/" element={<HomePage />} />
+  <Route path="/page/:pageNumber" element={<HomePage />} />
+  <Route path="/movie/:id" element={<MovieDetailsPage />} />
+</Routes>
       </div>
     </Router>
   );

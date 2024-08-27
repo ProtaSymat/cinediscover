@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { searchMovies } from '../api/movies';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { searchMovies, fetchGenres } from '../api/movies';
 import MovieCard from '../components/MovieCard';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../components/Pagination';
@@ -9,48 +10,72 @@ const HomePage = () => {
   const [query, setQuery] = useState('');
   const [movies, setMovies] = useState([]);
   const [searchInitiated, setSearchInitiated] = useState(false);
-  const [loading, setLoading] = useState(false); // Ajout d'un état pour le chargement
-  const [error, setError] = useState(''); // Ajout d'un état pour gérer les erreurs
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const resultsPerPage = 10;
+  const [totalItems, setTotalItems] = useState(0);
+  const [selectedGenre, setSelectedGenre] = useState('');
+  const [genres, setGenres] = useState([]);
 
-  const handleSearch = async (event) => {
-    event.preventDefault();
-    setError(''); // Réinitialiser l'erreur à chaque nouvelle recherche
+  const { pageNumber } = useParams();
+  const navigate = useNavigate();
+
+  const handleSearch = async (page = currentPage) => {
+    setError('');
     if (!query) return;
-    setLoading(true); // Indiquer que la recherche est en cours
+    setLoading(true);
+
     try {
-      const results = await searchMovies(query);
-      setMovies(results);
+      const data = await searchMovies(query, selectedGenre, page);
+      setMovies(data.results);
+      setTotalItems(data.total_results);
       setSearchInitiated(true);
-      if (results.length === 0) { // Gérer le cas où aucun film n'est trouvé
+
+      if (data.results.length === 0) {
         setError('Aucun film n’a été trouvé.');
       }
     } catch (error) {
       console.error("Erreur lors de la recherche :", error);
-      setError('Problème de connexion à l’API.'); // Définir un message d'erreur
+      setError('Problème de connexion à l’API.');
     } finally {
-      setLoading(false); // Indiquer que la recherche est terminée
+      setLoading(false);
     }
   };
 
-  const indexOfLastMovie = currentPage * resultsPerPage;
-  const indexOfFirstMovie = indexOfLastMovie - resultsPerPage;
-  const currentMovies = movies.slice(indexOfFirstMovie, indexOfLastMovie);
+  useEffect(() => {
+    const num = Number(pageNumber) || 1;
+    setCurrentPage(num);
+    handleSearch(num);
+  }, [pageNumber, query, selectedGenre]);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    navigate(`/page/${pageNumber}`);
+  };
 
-  // Groupe les films par trois
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        const fetchedGenres = await fetchGenres();
+        setGenres(fetchedGenres);
+      } catch (error) {
+        console.error("Erreur lors du chargement des genres :", error);
+      }
+    };
+
+    loadGenres();
+  }, []);
+
+  // Grouper les films par 3
   const groupedMovies = [];
-  for (let i = 0; i < currentMovies.length; i += 3) {
-    groupedMovies.push(currentMovies.slice(i, i + 3));
+  for (let i = 0; i < movies.length; i += 3) {
+    groupedMovies.push(movies.slice(i, i + 3));
   }
 
   return (
     <div className={`${!searchInitiated ? 'vh-100 container' : ''}`}>
       <div className="d-flex flex-column justify-content-center pt-5 align-items-center">
         <img src={logo} alt="Logo" style={{ maxWidth: '180px', maxHeight: '180px' }} />
-        <SearchBar query={query} setQuery={setQuery} handleSearch={handleSearch} searchInitiated={searchInitiated} />
+        <SearchBar query={query} genres={genres} setSelectedGenre={setSelectedGenre} setQuery={setQuery} handleSearch={(e) => { e.preventDefault(); handleSearch(1); }} searchInitiated={searchInitiated} />
         {loading && <p className="text-white">Chargement...</p>}
         {error && <p className="text-white">{error}</p>}
       </div>
@@ -65,7 +90,7 @@ const HomePage = () => {
           </div>
         ))}
         {!loading && movies.length > 0 && (
-          <Pagination itemsPerPage={resultsPerPage} totalItems={movies.length} paginate={paginate} currentPage={currentPage} />
+          <Pagination itemsPerPage={20} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
         )}
       </div>
     </div>
