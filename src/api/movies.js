@@ -18,11 +18,15 @@ export const searchMovies = async (query) => {
 
 export const fetchMovieDetails = async (movieId) => {
   try {
-    const response = await fetch(`${API_DETAILURL}movie/${movieId}?api_key=${API_KEY}&language=en-US`);
+    const url = `${API_DETAILURL}movie/${movieId}?api_key=${API_KEY}&language=en-US`;
+    console.log("URL de requête fetchMovieDetails:", url); // Vérifier l'URL construite
+    const response = await fetch(url);
+    console.log("Réponse fetchMovieDetails:", response); // Examiner l'objet de réponse
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
+    console.log("Données fetchMovieDetails:", data); // Examiner les données reçues
     return data;
   } catch (error) {
     console.error("Erreur lors de la récupération des détails du film :", error);
@@ -32,7 +36,7 @@ export const fetchMovieDetails = async (movieId) => {
 
 export const fetchMovieReviews = async (movieId) => {
   try {
-    const response = await fetch(`${API_URL}/movie/${movieId}/reviews?api_key=${API_KEY}&language=en-US`);
+    const response = await fetch(`${API_DETAILURL}movie/${movieId}/reviews?api_key=${API_KEY}&language=en-US`);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }

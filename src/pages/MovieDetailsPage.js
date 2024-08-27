@@ -25,12 +25,12 @@ const MovieDetailsPage = () => {
   if (!movieDetails) return <div>Loading movie details...</div>;
 
   return (
-    <div className="container mt-5 bg-dark h-100">
+    <div className="container pt-5 bg-dark">
       <div className="row">
-        <div className="col-md-8">
+        <div className="col-md-8 text-white">
           <h1>{movieDetails.title}</h1>
           <p>{movieDetails.overview}</p>
-          <h3>Reviews</h3>
+          <h3>Avis</h3>
           {reviews.length > 0 ? (
             reviews.map((review, index) => (
               <div key={index}>
@@ -39,7 +39,7 @@ const MovieDetailsPage = () => {
               </div>
             ))
           ) : (
-            <p>No reviews available.</p>
+            <p>Pas d'avis disponible :(</p>
           )}
         </div>
         <div className="col-md-4">
