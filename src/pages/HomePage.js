@@ -5,7 +5,10 @@ import MovieCard from '../components/MovieCard';
 import SearchBar from '../components/SearchBar';
 import Pagination from '../components/Pagination';
 import logo from '../img/logo.png';
+import MultipleFloatingImages from '../components/MultipleFloatingImages'; // Assurez-vous que le chemin d'importation est correct
 
+
+// Ensuite, incluez {floatingImages} dans le JSX de votre composant, avant la recherche initiée
 const HomePage = () => {
   const [query, setQuery] = useState('');
   const [movies, setMovies] = useState([]);
@@ -19,6 +22,7 @@ const HomePage = () => {
 
   const { pageNumber } = useParams();
   const navigate = useNavigate();
+
 
   const handleSearch = async (page = currentPage) => {
     setError('');
@@ -65,34 +69,47 @@ const HomePage = () => {
     loadGenres();
   }, []);
 
-  // Grouper les films par 3
   const groupedMovies = [];
   for (let i = 0; i < movies.length; i += 3) {
     groupedMovies.push(movies.slice(i, i + 3));
   }
-
   return (
-    <div className={`${!searchInitiated ? 'vh-100 container' : ''}`}>
-      <div className="d-flex flex-column justify-content-center pt-5 align-items-center">
-        <img src={logo} alt="Logo" style={{ maxWidth: '180px', maxHeight: '180px' }} />
-        <SearchBar query={query} genres={genres} setSelectedGenre={setSelectedGenre} setQuery={setQuery} handleSearch={(e) => { e.preventDefault(); handleSearch(1); }} searchInitiated={searchInitiated} />
-        {loading && <p className="text-white">Chargement...</p>}
-        {error && <p className="text-white">{error}</p>}
+    <div className={`${!searchInitiated ? 'vh-100 d-flex flex-column justify-content-center align-items-center' : 'container'}`}>
+      { !searchInitiated ? (
+        <div className="text-center mt-5">
+          <div className="position-relative" style={{zIndex:2}}>
+            <img  className="mb-4" src={logo} alt="Logo" />
+            <p className="text-white ">Envie de popcorn et de passer du bon temps ?</p>
+            <SearchBar query={query} genres={genres} setSelectedGenre={setSelectedGenre} setQuery={setQuery} handleSearch={(e) => { e.preventDefault(); handleSearch(1); }} searchInitiated={searchInitiated} />
+          </div>
+          <div className="position-relative d-md-flex d-none" style={{zIndex:1}}>
+            <MultipleFloatingImages numberOfPopcorns={20} />
+          </div>
       </div>
-      <div className={`text-center d-flex flex-column justify-content-center align-items-center pt-5`}>
-        {!loading && !error && groupedMovies.map((group, index) => (
-          <div className="row d-flex flex-wrap justify-content-center w-100 container" key={index}>
-            {group.map(movie => (
-              <div className="col-md-4 mb-4" key={movie.id}>
-                <MovieCard movie={movie} />
+      ) : (
+        <>
+          <div className="d-flex flex-column justify-content-center pt-5 align-items-center">
+            <img src={logo} alt="Logo" style={{ maxWidth: '180px', maxHeight: '180px' }} />
+            <SearchBar query={query} genres={genres} setSelectedGenre={setSelectedGenre} setQuery={setQuery} handleSearch={(e) => { e.preventDefault(); handleSearch(1); }} searchInitiated={searchInitiated} />
+            {loading && <p className="text-white">Chargement...</p>}
+            {error && <p className="text-white">{error}</p>}
+          </div>
+          <div className={`text-center d-flex flex-column justify-content-center align-items-center pt-5`}>
+            {!loading && !error && groupedMovies.map((group, index) => (
+              <div className="row d-flex flex-wrap justify-content-center w-100" key={index}>
+                {group.map(movie => (
+                  <div className="col-md-4 mb-4" key={movie.id}>
+                    <MovieCard movie={movie} />
+                  </div>
+                ))}
               </div>
             ))}
+            {!loading && movies.length > 0 && (
+              <Pagination itemsPerPage={20} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
+            )}
           </div>
-        ))}
-        {!loading && movies.length > 0 && (
-          <Pagination itemsPerPage={20} totalItems={totalItems} paginate={paginate} currentPage={currentPage} />
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };
